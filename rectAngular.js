@@ -99,22 +99,22 @@
 		
 		/* Draw Ball */
 		if (rect.ball.count % rect.ball.speed === 0) {
-			/* 7 */
+			/* Direction Up-Left */
 			if (!rect.ball.mx && !rect.ball.my) {
 				rect.ball.x -= rect.ball.step;
 				rect.ball.y -= rect.ball.step;
 			}
-			/* 9 */
+			/* Direction Up-Right */
 			else if (rect.ball.mx && !rect.ball.my) {
 				rect.ball.x += rect.ball.step;
 				rect.ball.y -= rect.ball.step;
 			}
-			/* 1 */
+			/* Direction Down-Left */
 			else if (!rect.ball.mx && rect.ball.my) {
 				rect.ball.x -= rect.ball.step;
 				rect.ball.y += rect.ball.step;
 			}	
-			/* 3 */
+			/* Direction Down-Right */
 			else {
 				rect.ball.x += rect.ball.step;
 				rect.ball.y += rect.ball.step;
@@ -132,27 +132,18 @@
 			let x_2 = rect.draw.x1 > rect.draw.x2 ? rect.draw.x1 : rect.draw.x2;
 			let y_1 = rect.draw.y1 > rect.draw.y2 ? rect.draw.y2 : rect.draw.y1;
 			let y_2 = rect.draw.y1 > rect.draw.y2 ? rect.draw.y1 : rect.draw.y2;
-			/*
-			console.log({
-				bx : rect.ball.x,
-				by : rect.ball.y,
-				x1 : x_1,
-				x2 : x_2,
-				y1 : y_1,
-				y2 : y_2
+			let mx_1 = x_1 - rect.ball.w;
+			let mx_2 = x_2 - rect.ball.w;
+			let my_1 = y_1 - rect.ball.w;
+			let my_2 = y_2 - rect.ball.w;
+			let nx_1 = x_1 + rect.ball.w;
+			let nx_2 = x_2 + rect.ball.w;
+			let ny_1 = y_1 + rect.ball.w;
+			let ny_2 = y_2 + rect.ball.w;
+					
+			/* Direction Up-Left */
+			if (!rect.ball.mx && !rect.ball.my) {
 				
-			});
-			*/
-			/* 7 */
-
-			
-			/* 3 */
-			if (rect.ball.mx && rect.ball.my) {
-				let mx_1 = x_1 - rect.ball.w;
-				let mx_2 = x_2 - rect.ball.w;
-				let my_1 = y_1 - rect.ball.w;
-				let my_2 = y_2 - rect.ball.w;
-				/*
 				console.log({
 				bx : rect.ball.x,
 				by : rect.ball.y,
@@ -162,7 +153,52 @@
 				y2 : my_2,
 				
 				});
-				*/
+				
+				if (nx_1 <= rect.ball.x && nx_2 >= rect.ball.x && ny_1 <= rect.ball.y && ny_2 >= rect.ball.y) {
+					let fromX = rect.ball.x - nx_2;
+					let fromY = rect.ball.y - ny_2;
+					if (fromX < fromY) {
+						rect.ball.my = true;
+					}
+					else {
+						rect.ball.mx = true;
+					}
+				}
+			}
+			/* Direction Up-Right */
+			else if (rect.ball.mx && !rect.ball.my) {
+				if (mx_1 <= rect.ball.x && mx_2 >= rect.ball.x && ny_1 <= rect.ball.y && ny_2 >= rect.ball.y) {
+
+					let fromX = rect.ball.x - mx_1;
+					let fromY = rect.ball.y - my_1;
+					if (fromX < fromY) {
+						rect.ball.my = false;
+						rect.ball.mx = false;
+					}
+					else {	
+						rect.ball.my = true;
+						rect.ball.mx = true;
+					}
+				}
+			}
+			/* Direction Down-Left */
+			else if (!rect.ball.mx && rect.ball.my) {
+				if (nx_1 <= rect.ball.x && nx_2 >= rect.ball.x && my_1 <= rect.ball.y && my_2 >= rect.ball.y) {
+
+					let fromX = rect.ball.x - mx_1;
+					let fromY = rect.ball.y - my_1;
+					if (fromX > fromY) {
+						rect.ball.my = false;
+						rect.ball.mx = false;
+					}
+					else {	
+						rect.ball.my = true;
+						rect.ball.mx = true;
+					}
+				}
+			}				
+			/* Direction Down-Right */
+			else if (rect.ball.mx && rect.ball.my) {
 				if (mx_1 <= rect.ball.x && mx_2 >= rect.ball.x && my_1 <= rect.ball.y && my_2 >= rect.ball.y) {
 					let fromX = rect.ball.x - mx_1;
 					let fromY = rect.ball.y - my_1;
@@ -175,8 +211,7 @@
 				}
 			}
 		}
-		
-		
+				
 		/* Check for Ball Overflow */
 		if (rect.ball.x < 0 || rect.ball.y < 0 || rect.ball.x > rect.area.width || rect.ball.y > rect.area.height) {
 			clearInterval(rect.anima);
