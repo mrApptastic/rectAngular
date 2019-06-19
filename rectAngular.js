@@ -28,10 +28,6 @@
 		ball : null
 	};
 	rect.init = function () {
-		/* Clear Animation (If any) */
-		if (rect.anima) {
-			clearInterval(rect.anima);
-		}
 		/* Save Base Rect Settings */
 		if (!rect.set.draw) {
 			rect.set.draw = JSON.stringify(rect.draw);
@@ -40,72 +36,130 @@
 		if (!rect.set.ball) {
 			rect.set.ball = JSON.stringify(rect.ball);
 		}
-		/* Set Start Date */
-		if (!rect.draw.start) {
-			rect.draw.start = new Date();
-		} 
+
 		rect.area.width = width ? width : window.innerWidth;
 		rect.area.height = height ? height : window.innerHeight;
 		rect.area.style.cursor = "none";
 		rect.ctxt.fillStyle = "DodgerBlue";
 		rect.ctxt.strokeStyle = "DodgerBlue";
 		rect.ctxt.font = "30px Verdana";
-		rect.anima = setInterval(rect.paint, 1);
+		rect.screen();
+	};
+	rect.screen = function () {				
+		/* Clear Canvas */
+		rect.ctxt.clearRect(0, 0, rect.area.width, rect.area.height);
+		
+		/* Get Dimensions */
+		var offsetX = rect.area.width / 20; 
+		var offsetY = rect.area.height / 10; 
+		var row = rect.area.height / 20; 
+		var middle = rect.area.width / 2;
+		
+		/* Write Title */
+		rect.ctxt.fillText("rectAngular", middle - 100, 80); 
+		
+		/* Write Instructions */
+		rect.ctxt.fillText("Tap screen to start...", middle - 160, row * 4);
+		
+		/* Write High Score If Any */
+		var highscore = rect.getHighScore();
+		for (let i = 0; i < highscore.length; i++) {
+			let d = new Date(highscore[i].date);
+			let thisDate = d.getDate() + "/" + d.getMonth() + " " + (d.getYear() + 1900);
+			rect.ctxt.fillText(i + 1 + "- " + highscore[i].score + " - " + highscore[i].name + " - " + thisDate, middle - 300, row * (6 + i *2));
+		}
+	};
+	rect.start = function () {
+		/* Set Start Date */
+		if (!rect.draw.start) {
+			rect.draw.start = new Date();
+		}
+		/* Initialise Game Cyclus */
+		rect.anima = setInterval(rect.paint, 1);		
+	};
+	rect.stop = function () {
+		/* Stop Game Cyclus */
+		clearInterval(rect.anima);
+		
+		/* Handle Highscores */
+		var highscore = rect.getHighScore();
+		
+		if (highscore.length < 5 || rect.draw.score > highscore[4].score) {
+			var name = window.prompt("Enter Name for High Score");
+			highscore.push({"name" : name, "score" : rect.draw.score, "date" : rect.draw.start });
+			highscore = highscore.sort(function (x, y) {
+				return y.score - x.score;
+			});			 
+			while (highscore.length > 5) {
+				highscore.pop();
+			}			
+			localStorage["RectScore"] = JSON.stringify(highscore);
+		}	
+		
+		/* Reset Game Objects */
+		rect.draw = JSON.parse(rect.set.draw);
+		rect.ball = JSON.parse(rect.set.ball);
+		
+		/* Draw Start Screen */
+		rect.screen();
+	};
+	rect.getHighScore = function () {
+		var highscore = new Array();
+		var high = localStorage["RectScore"];
+		if  (high) {
+			highscore = JSON.parse(high);
+		}
+		return highscore;
 	};
 	rect.area.onclick = function (e) {
-		if (rect.anima) {
-			let x = e.pageX - (rect.area.getBoundingClientRect().left + window.scrollX);
-			let y = e.pageY - (rect.area.getBoundingClientRect().top + window.scrollY);
+		/* Check if game has begun */
+		if (rect.draw.start !== null) {
+			/* Check if there is line left */
+			if (rect.draw.left > 0) {			
+				let x = e.pageX - (rect.area.getBoundingClientRect().left + window.scrollX);
+				let y = e.pageY - (rect.area.getBoundingClientRect().top + window.scrollY);
 		
-			/* No Clicks */
-			if (!rect.draw.x1 && !rect.draw.y1 && !rect.draw.x1 && !rect.draw.y1) {			
-				rect.draw.x1 = x;
-				rect.draw.y1 = y;
-			}
-			/* One Click */
-			else if (rect.draw.x1 && rect.draw.y1 && !rect.draw.x2 && !rect.draw.y2) {
-				rect.draw.x2 = x;
-				rect.draw.y2 = y;
+				/* Step One: Set x1 and y1 */
+				if ((!rect.draw.x1 && !rect.draw.y1 && !rect.draw.x1 && !rect.draw.y1) || (rect.draw.x1 && rect.draw.y1 && rect.draw.x2 && rect.draw.y2)) {			
+					rect.draw.x1 = x;
+					rect.draw.y1 = y;
+					rect.draw.x2 = null;
+					rect.draw.y2 = null;
+				}
+				/* Step Two: Set x2 and y2 and draw rectangle */
+				else if (rect.draw.x1 && rect.draw.y1 && !rect.draw.x2 && !rect.draw.y2) {
+					rect.draw.x2 = x;
+					rect.draw.y2 = y;
 			
-				/* Modify Line Left */
-				let x_1 = rect.draw.x1 > rect.draw.x2 ? rect.draw.x2 : rect.draw.x1;
-				let x_2 = rect.draw.x1 > rect.draw.x2 ? rect.draw.x1 : rect.draw.x2;
-				let y_1 = rect.draw.y1 > rect.draw.y2 ? rect.draw.y2 : rect.draw.y1;
-				let y_2 = rect.draw.y1 > rect.draw.y2 ? rect.draw.y1 : rect.draw.y2;
-				let x_L = x_2 - x_1;
-				let y_L = y_2 - y_1;
-				rect.draw.left -= (x_L + y_L);
-			}
-			/* Two Clicks */
-			else if (rect.draw.x1 && rect.draw.y1 && rect.draw.x2 && rect.draw.y2) {
-				rect.draw.x1 = x;
-				rect.draw.y1 = y;
-				rect.draw.x2 = null;
-				rect.draw.y2 = null;
+					/* Modify Line Left */
+					let x_1 = rect.draw.x1 > rect.draw.x2 ? rect.draw.x2 : rect.draw.x1;
+					let x_2 = rect.draw.x1 > rect.draw.x2 ? rect.draw.x1 : rect.draw.x2;
+					let y_1 = rect.draw.y1 > rect.draw.y2 ? rect.draw.y2 : rect.draw.y1;
+					let y_2 = rect.draw.y1 > rect.draw.y2 ? rect.draw.y1 : rect.draw.y2;
+					let x_L = x_2 - x_1;
+					let y_L = y_2 - y_1;
+					rect.draw.left -= (x_L + y_L);
+				}
 			}
 		}
 		else {
-			rect.init();
+			rect.start();
 		}
 	};
 	rect.area.onmousemove = function (e) {
+		/* Set Temporary Values */
 		rect.draw.tx = e.pageX - (rect.area.getBoundingClientRect().left + window.scrollX);
 		rect.draw.ty = e.pageY - (rect.area.getBoundingClientRect().top + window.scrollY);
 	};
-	rect.paint = function () {
-		/* Check if there is line left */
-		if (rect.draw.left < 0) {
-			// End Logic Goes here
-		}
-		
+	rect.paint = function () {	
 		/* Clear Canvas */
 		rect.ctxt.clearRect(0, 0, rect.area.width, rect.area.height);
 		
 		/* Update Score */
-		rect.draw.score = rect.draw.start ? Math.floor((new Date().getTime() - rect.draw.start.getTime()) / 1000) : 0;
+		rect.draw.score = rect.draw.start ? Math.abs((new Date().getTime() - rect.draw.start.getTime())) : 0;
 		
 		/* Display Line Left */
-		rect.ctxt.fillText("Line: " + rect.draw.left, rect.area.width - 190, 35);	
+		rect.ctxt.fillText("Line: " + (rect.draw.left > 0 ? rect.draw.left : 0), rect.area.width - 190, 35);	
 		
 		/* Display Score */
 		rect.ctxt.fillText("Score: " + rect.draw.score, 10, 35);
@@ -239,10 +293,7 @@
 				
 		/* Check for Ball Overflow */
 		if (rect.ball.x < 0 || rect.ball.y < 0 || rect.ball.x > rect.area.width || rect.ball.y > rect.area.height) {
-			clearInterval(rect.anima);
-			rect.draw = JSON.parse(rect.set.draw);
-			rect.ball = JSON.parse(rect.set.ball);
-			rect.init();
+			rect.stop();
 		}
 		
 		rect.ball.count++;
