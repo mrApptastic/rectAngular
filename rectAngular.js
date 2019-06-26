@@ -39,13 +39,14 @@
 
 		rect.area.width = width ? width : window.innerWidth;
 		rect.area.height = height ? height : window.innerHeight;
-		rect.area.style.cursor = "none";
 		rect.ctxt.fillStyle = "DodgerBlue";
 		rect.ctxt.strokeStyle = "DodgerBlue";
 		rect.ctxt.font = "30px Verdana";
 		rect.screen();
 	};
-	rect.screen = function () {				
+	rect.screen = function () {		
+		rect.area.style.cursor = "pointer";
+
 		/* Clear Canvas */
 		rect.ctxt.clearRect(0, 0, rect.area.width, rect.area.height);
 		
@@ -75,7 +76,8 @@
 			rect.draw.start = new Date();
 		}
 		/* Initialise Game Cyclus */
-		rect.anima = setInterval(rect.paint, 1);		
+		rect.anima = setInterval(rect.paint, 1);
+		rect.area.style.cursor = "none";		
 	};
 	rect.stop = function () {
 		/* Stop Game Cyclus */
