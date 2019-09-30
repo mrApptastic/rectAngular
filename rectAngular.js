@@ -1,4 +1,4 @@
-﻿var rectAngular = function (elem, width, height) {
+﻿var rectAngular = function (elem, width, height, settings) {
 	var rect = this;
 	rect.area = document.getElementById(elem);
 	rect.ctxt = rect.area.getContext("2d");
@@ -39,8 +39,8 @@
 
 		rect.area.width = width ? width : window.innerWidth;
 		rect.area.height = height ? height : window.innerHeight;
-		rect.ctxt.fillStyle = "DodgerBlue";
-		rect.ctxt.strokeStyle = "DodgerBlue";
+		rect.ctxt.fillStyle = settings && settings.colour ? settings.colour : "DodgerBlue";
+		rect.ctxt.strokeStyle = settings && settings.colour ? settings.colour : "DodgerBlue";
 		rect.ctxt.font = "30px Verdana";
 		rect.screen();
 	};
